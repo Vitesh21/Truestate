@@ -9,6 +9,7 @@ FILTER_OPTIONS = None
 CSV_PATH_LOCAL = os.path.join(os.path.dirname(__file__), "../truestate_assignment_dataset.csv")
 CSV_PATH_REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../truestate_assignment_dataset.csv"))
 PARQUET_PATH = os.path.join(os.path.dirname(__file__), "../../cached_data.parquet")
+DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../truestate.db"))
 
 def get_csv_path():
     if os.path.exists(CSV_PATH_LOCAL): return CSV_PATH_LOCAL
@@ -54,15 +55,27 @@ def load_data():
     if DF is not None:
         return DF
 
+    # 1) Try parquet cache
     if os.path.exists(PARQUET_PATH):
         try:
             print("Loading data from Parquet cache...")
             DF = pd.read_parquet(PARQUET_PATH)
         except Exception as e:
             print(f"Error reading parquet: {e}")
-            load_from_csv()
-    else:
-        print("Parquet not found. Loading from CSV...")
+            DF = None
+
+    # 2) If parquet not loaded, try SQLite DB
+    if DF is None and os.path.exists(DB_PATH):
+        try:
+            print(f"Loading data from SQLite DB: {DB_PATH}...")
+            load_from_db()
+        except Exception as e:
+            print(f"Error loading from DB: {e}")
+            DF = None
+
+    # 3) If still not loaded, fallback to CSV
+    if DF is None:
+        print("Loading from CSV as fallback...")
         load_from_csv()
 
     print(f"Data Loaded: {len(DF)} rows")
@@ -213,3 +226,59 @@ def get_transactions(page=1, page_size=10, sort_field='Date', sort_dir='desc', q
         "pageSize": page_size,
         "total": total
     }
+
+def load_from_db():
+    """Load data from SQLite database table `transactions` if present."""
+    global DF
+    import sqlite3
+    if not os.path.exists(DB_PATH):
+        raise FileNotFoundError(f"Database not found: {DB_PATH}")
+
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        # Attempt to read the transactions table
+        df = pd.read_sql_query('SELECT * FROM transactions', conn)
+    except Exception as e:
+        # If transactions table doesn't exist try to read a 'properties' table (legacy)
+        try:
+            df = pd.read_sql_query('SELECT * FROM properties', conn)
+        except Exception:
+            conn.close()
+            raise e
+
+    conn.close()
+
+    # If the DB import sanitized column names (lowercase/underscores), try to map them back
+    cols = set(df.columns)
+    if 'Transaction ID' not in cols and 'transaction id' in cols:
+        new_cols = {}
+        for c in df.columns:
+            nc = c.replace('_', ' ').title()
+            new_cols[c] = nc
+        df = df.rename(columns=new_cols)
+
+    # Apply consistent COLUMN_MAPPING (rename to friendly keys)
+    df = df.rename(columns=COLUMN_MAPPING)
+
+    # Same cleaning as CSV path
+    if 'Date' in df.columns:
+        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+    for col in ['TotalAmount', 'FinalAmount', 'PricePerUnit']:
+        if col in df.columns and df[col].dtype == 'object':
+                df[col] = df[col].replace(r'[^0-9.-]', '', regex=True).astype(float)
+
+    if 'Tags' in df.columns:
+            df['Tags'] = df['Tags'].fillna('').astype(str).apply(lambda x: [t.strip() for t in x.replace('|', ',').split(',') if t.strip()])
+
+    df = df.fillna(np.nan).replace([np.nan], [None])
+    DF = df
+
+    try:
+        print("Saving DB-loaded data to Parquet cache...")
+        df.to_parquet(PARQUET_PATH)
+    except Exception as e:
+        print(f"Could not save parquet: {e}")
+
+    compute_filter_options()
+    return DF
