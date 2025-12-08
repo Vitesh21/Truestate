@@ -1,0 +1,39 @@
+body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f7fa; }
+.topbar { background: #2c3e50; color: white; padding: 16px; font-size: 20px; font-weight: bold; }
+.controls { display:flex; gap:16px; padding:12px; align-items:center; background: white; margin: 12px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.searchbar { display: flex; gap: 8px; }
+.searchbar input { padding:8px 12px; width:300px; border: 1px solid #ddd; border-radius: 4px; }
+.searchbar button { padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+.searchbar button:hover { background: #2980b9; }
+.main { display:flex; gap:16px; padding:12px }
+aside { width:280px; }
+section { flex:1; background: white; padding: 16px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.table-wrap { position: relative }
+.table-scroll-controls { position: absolute; left: 8px; top: -40px; display:flex; gap:8px }
+.table-scroll-controls button { padding:6px 8px; background: #ecf0f1; border: 1px solid #bdc3c7; border-radius: 4px; cursor: pointer; }
+.table-scroll-controls button:hover { background: #bdc3c7; }
+.table-container { overflow:auto; max-height: 600px; }
+.transactions { min-width: 1000px; border-collapse:collapse; width: 100%; }
+.transactions th { background: #34495e; color: white; padding:10px 12px; text-align:left; font-weight: 600; position: sticky; top: 0; }
+.transactions td { padding:10px 12px; border-bottom:1px solid #eee; text-align:left }
+.transactions tbody tr:hover { background: #f8f9fa; }
+.pagination { margin:12px 0 }
+.pagination.simple { display:flex; gap:12px; align-items:center; justify-content: center; }
+.pagination button { padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+.pagination button:hover:not(:disabled) { background: #2980b9; }
+.pagination button:disabled { background: #bdc3c7; cursor: not-allowed; }
+.page-indicator { font-weight:600; color: #2c3e50; }
+.sort { display: flex; gap: 8px; align-items: center; }
+.sort label { font-weight: 600; color: #2c3e50; }
+.sort select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+.filters { background: white; padding: 16px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.filters h4 { margin: 0 0 16px 0; color: #2c3e50; }
+.filter-group { margin-bottom: 16px; }
+.filter-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #34495e; font-size: 14px; }
+.filter-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.filter-buttons button { padding: 6px 12px; background: #ecf0f1; border: 1px solid #bdc3c7; border-radius: 4px; cursor: pointer; font-size: 12px; }
+.filter-buttons button:hover { background: #d5dbdb; }
+.filter-buttons button.active { background: #3498db; color: white; border-color: #2980b9; }
+.stats { margin-bottom: 12px; font-weight: 600; color: #2c3e50; }
+.loading { padding:12px; color:#666; text-align: center; }
+.error { padding:12px; color: #e74c3c; background: #fadbd8; border: 1px solid #e74c3c; border-radius: 4px; margin: 12px 0; }
