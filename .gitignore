@@ -63,3 +63,4 @@ ENV/
 .env.development.local
 .env.test.local
 .env.production.local
+truestate_assignment_dataset.csv
